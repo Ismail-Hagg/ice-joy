@@ -1,0 +1,63 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "icejoy",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "icejoy (profile mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile"
+    },
+    {
+      "name": "icejoy (release mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release"
+    },
+    {
+      "name": "Android",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "emulator-5554"
+    },
+    {
+      "name": "Other",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "emulator-5556"
+    },
+    {
+      "name": "Ios",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "3630403B-675E-4912-B331-0E2E00094B5A"
+    },
+    {
+      "name": "Real",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "RZCRB05EWAZ"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Compound",
+      "configurations": ["Android", "Ios"]
+    },
+    {
+      "name": "androidzz",
+      "configurations": ["Android", "Other"]
+    },
+    {
+      "name": "real device",
+      "configurations": ["Ios", "Real"]
+    }
+  ]
+}
