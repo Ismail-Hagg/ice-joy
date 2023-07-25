@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:icejoy/pages/login_page/info_page.dart';
 
+import '../utils/enums.dart';
 import 'home_page/home_page.dart';
 import 'login_page/auth_controller.dart';
 import 'login_page/login_page.dart';
@@ -10,12 +12,13 @@ class ControllPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isIos = Theme.of(context).platform == TargetPlatform.iOS;
-    final AuthController controller = Get.put(AuthController(isIos: isIos));
     return GetBuilder<AuthController>(
-      init: controller,
-      builder: (controller) =>
-          controller.user == null ? const LoginPage() : const HomePage(),
+      init: Get.find<AuthController>(),
+      builder: (controll) => controll.user == null
+          ? const LoginPage()
+          : controll.userModel.state == LogState.info
+              ? const InfoPage()
+              : const HomePage(),
     );
   }
 }

@@ -37,6 +37,16 @@ dependencies:
   firebase_core: ^2.15.0
   get: ^4.6.5
   firebase_auth: ^4.7.1
+  google_sign_in: ^6.1.4
+  adaptive_dialog: ^1.9.0
+  cloud_firestore: ^4.8.3
+  shared_preferences: ^2.2.0
+  intl_phone_number_input: ^0.7.3+1
+  intl: ^0.18.1
+  file_picker: ^5.3.3
+  # flutter_multi_formatter: ^2.11.5
+  # geolocator: ^9.0.2
+  # nfc_manager: ^3.3.0
 
 dev_dependencies:
   flutter_test:

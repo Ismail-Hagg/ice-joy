@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:icejoy/utils/constants.dart';
 
 class LoginTextField extends StatelessWidget {
   final bool otp;
@@ -28,7 +29,7 @@ class LoginTextField extends StatelessWidget {
         }
       },
       textAlign: otp ? TextAlign.center : TextAlign.left,
-      style: const TextStyle(fontSize: 20),
+      style: const TextStyle(fontSize: 15),
       keyboardType: type,
       textInputAction: action,
       obscureText: obscure,
@@ -42,9 +43,9 @@ class LoginTextField extends StatelessWidget {
         hintStyle: const TextStyle(
           fontSize: 15,
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black, width: 1.5),
-          borderRadius: BorderRadius.all(
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: purpleColor, width: 1.5),
+          borderRadius: const BorderRadius.all(
             Radius.circular(10),
           ),
         ),

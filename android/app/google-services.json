@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "161532374645-kupoc5kl4qqhsvnn8j9peee1a3dcvhv5.apps.googleusercontent.com",
+          "client_id": "161532374645-q278jgdmgcse06rmeq8kf0p20s3blrnd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.icejoy",
+            "certificate_hash": "6be843003c94c9ca7279fa92ab3dbd58ae0c26ff"
+          }
+        },
+        {
+          "client_id": "161532374645-sqm28b32as2bh0jev2rl3ojk14ijdh7m.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
