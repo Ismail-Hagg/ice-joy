@@ -19,193 +19,166 @@ class InfoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: appBackgroundColor,
       body: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-        AuthController controller = Get.find<AuthController>();
-        bool isIos = Get.find<AuthController>().isIos;
-        double width = constraints.maxWidth;
-        double height = constraints.maxHeight;
+        builder: (BuildContext context, BoxConstraints constraints) {
+          AuthController controller = Get.find<AuthController>();
+          bool isIos = Get.find<AuthController>().isIos;
+          double width = constraints.maxWidth;
+          double height = constraints.maxHeight;
 
-        return SafeArea(
-          child: Container(
-            height: height,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: GestureDetector(
+          return SafeArea(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        GestureDetector(
                           onTap: () =>
                               controller.userModel.method == LoginMethod.google
                                   ? controller.signOut()
-                                  : Get.back(),
-                          child: Icon(
-                              isIos ? CupertinoIcons.back : Icons.arrow_back),
-                        ),
-                      )
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GetBuilder<AuthController>(
-                        init: Get.find<AuthController>(),
-                        builder: (rain) => Stack(
-                          children: [
-                            GestureDetector(
-                              onTap: () => rain.selectPic(),
-                              child: Avatar(
-                                iconAndroid: Icons.person_outlined,
-                                iconIos: CupertinoIcons.person,
-                                iconColor: blackColor,
-                                iconSize: 35,
-                                backgroundColor: greayMain,
-                                shadow: rain.userModel.onlinePicPath == '' &&
-                                        rain.userModel.localPicPath == ''
-                                    ? false
-                                    : true,
-                                height: width * 0.3,
-                                width: width * 0.3,
-                                isBorder: rain.userModel.onlinePicPath == '' &&
-                                        rain.userModel.localPicPath == ''
-                                    ? true
-                                    : false,
-                                borderColor: blackColor,
-                                type: rain.userModel.onlinePicPath == '' &&
-                                        rain.userModel.localPicPath == ''
-                                    ? AvatarType.none
-                                    : rain.userModel.onlinePicPath != '' &&
-                                            rain.userModel.localPicPath == ''
-                                        ? AvatarType.online
-                                        : AvatarType.file,
-                                boxFit: BoxFit.cover,
-                                isIos: controller.isIos,
-                                link: rain.userModel.onlinePicPath == '' &&
-                                        rain.userModel.localPicPath == ''
-                                    ? null
-                                    : rain.userModel.onlinePicPath != '' &&
-                                            rain.userModel.localPicPath == ''
-                                        ? rain.userModel.onlinePicPath
-                                            .toString()
-                                        : rain.userModel.localPicPath
-                                            .toString(),
+                                  : {controller.controllerClear(), Get.back()},
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Icon(
+                                isIos ? CupertinoIcons.back : Icons.arrow_back),
+                          ),
+                        )
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GetBuilder<AuthController>(
+                          init: Get.find<AuthController>(),
+                          builder: (rain) => Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () => rain.selectPic(),
+                                child: Avatar(
+                                  iconAndroid: Icons.person_outlined,
+                                  iconIos: CupertinoIcons.person,
+                                  iconColor: blackColor,
+                                  iconSize: 35,
+                                  backgroundColor: greayMain,
+                                  shadow: rain.userModel.onlinePicPath == '' &&
+                                          rain.userModel.localPicPath == ''
+                                      ? false
+                                      : true,
+                                  height: width * 0.3,
+                                  width: width * 0.3,
+                                  isBorder:
+                                      rain.userModel.onlinePicPath == '' &&
+                                              rain.userModel.localPicPath == ''
+                                          ? true
+                                          : false,
+                                  borderColor: blackColor,
+                                  type: rain.userModel.onlinePicPath == '' &&
+                                          rain.userModel.localPicPath == ''
+                                      ? AvatarType.none
+                                      : rain.userModel.onlinePicPath != '' &&
+                                              rain.userModel.localPicPath == ''
+                                          ? AvatarType.online
+                                          : AvatarType.file,
+                                  boxFit: BoxFit.cover,
+                                  isIos: controller.isIos,
+                                  link: rain.userModel.onlinePicPath == '' &&
+                                          rain.userModel.localPicPath == ''
+                                      ? null
+                                      : rain.userModel.onlinePicPath != '' &&
+                                              rain.userModel.localPicPath == ''
+                                          ? rain.userModel.onlinePicPath
+                                              .toString()
+                                          : rain.userModel.localPicPath
+                                              .toString(),
+                                ),
                               ),
-                            ),
-                            if (rain.userModel.onlinePicPath != '' ||
-                                rain.userModel.localPicPath != '') ...[
-                              Positioned(
-                                bottom: 2,
-                                right: 5,
-                                child: GestureDetector(
-                                  onTap: () => rain.delPic(),
-                                  child: Avatar(
-                                    iconAndroid: Icons.delete_forever_outlined,
-                                    iconIos: CupertinoIcons.delete,
-                                    iconColor: blackColor,
-                                    iconSize: 16,
-                                    backgroundColor: appBackgroundColor,
-                                    height: width * 0.06,
-                                    width: width * 0.06,
-                                    isBorder: true,
-                                    type: AvatarType.none,
-                                    boxFit: BoxFit.cover,
-                                    shadow: false,
-                                    borderColor: blackColor,
+                              if (rain.userModel.onlinePicPath != '' ||
+                                  rain.userModel.localPicPath != '') ...[
+                                Positioned(
+                                  bottom: 2,
+                                  right: 5,
+                                  child: GestureDetector(
+                                    onTap: () => rain.delPic(),
+                                    child: Avatar(
+                                      iconAndroid:
+                                          Icons.delete_forever_outlined,
+                                      iconIos: CupertinoIcons.delete,
+                                      iconColor: blackColor,
+                                      iconSize: 16,
+                                      backgroundColor: appBackgroundColor,
+                                      height: width * 0.06,
+                                      width: width * 0.06,
+                                      isBorder: true,
+                                      type: AvatarType.none,
+                                      boxFit: BoxFit.cover,
+                                      shadow: false,
+                                      borderColor: blackColor,
+                                    ),
                                   ),
-                                ),
-                              )
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                            width: width * 0.85,
-                            child: CustomText(text: 'phone'.tr)),
-                        LoginContainer(
-                          width: width * 0.85,
-                          backgroundColor: greayMain,
-                          child: InternationalPhoneNumberInput(
-                            keyboardAction: TextInputAction.next,
-                            keyboardType: TextInputType.number,
-                            hintText: '',
-                            initialValue: PhoneNumber(
-                                isoCode: 'SA',
-                                phoneNumber: controller.userModel.phoneNumber,
-                                dialCode: '+966'),
-                            inputBorder: InputBorder.none,
-                            cursorColor: Colors.transparent,
-                            autoValidateMode: AutovalidateMode.disabled,
-                            selectorConfig: const SelectorConfig(
-                                selectorType: PhoneInputSelectorType.DIALOG,
-                                useEmoji: true,
-                                leadingPadding: 18,
-                                setSelectorButtonAsPrefixIcon: true),
-                            onInputChanged: (val) {},
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                            width: width * 0.85,
-                            child: CustomText(text: 'username'.tr)),
-                        LoginContainer(
-                          width: width * 0.85,
-                          backgroundColor: greayMain,
-                          child: LoginTextField(
-                            otp: false,
-                            controller: controller.userNameController,
-                            obscure: false,
-                            type: TextInputType.emailAddress,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                            width: width * 0.85,
-                            child: Row(
-                              children: [
-                                CustomText(text: 'email'.tr),
-                                SizedBox(
-                                  width: width * 0.02,
-                                ),
-                                if (controller.userModel.method !=
-                                    LoginMethod.email) ...[
-                                  CustomText(text: 'optional'.tr)
-                                ],
+                                )
                               ],
-                            )),
-                        LoginContainer(
-                          width: width * 0.85,
-                          backgroundColor: greayMain,
-                          child: LoginTextField(
-                            otp: false,
-                            controller: controller.emailController,
-                            obscure: false,
-                            type: TextInputType.emailAddress,
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  if (controller.userModel.method == LoginMethod.email) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                              width: width * 0.85,
+                              child: CustomText(text: 'phone'.tr)),
+                          LoginContainer(
+                            width: width * 0.85,
+                            backgroundColor: greayMain,
+                            child: InternationalPhoneNumberInput(
+                              keyboardAction: TextInputAction.next,
+                              keyboardType: TextInputType.number,
+                              hintText: '',
+                              initialValue: PhoneNumber(
+                                  isoCode: 'SA',
+                                  phoneNumber: controller.userModel.phoneNumber,
+                                  dialCode: '+966'),
+                              inputBorder: InputBorder.none,
+                              cursorColor: Colors.transparent,
+                              autoValidateMode: AutovalidateMode.disabled,
+                              selectorConfig: const SelectorConfig(
+                                  selectorType: PhoneInputSelectorType.DIALOG,
+                                  useEmoji: true,
+                                  leadingPadding: 18,
+                                  setSelectorButtonAsPrefixIcon: true),
+                              onInputChanged: (val) {
+                                controller.moedelPhone(
+                                    phone: val.phoneNumber.toString());
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                              width: width * 0.85,
+                              child: CustomText(text: 'username'.tr)),
+                          LoginContainer(
+                            width: width * 0.85,
+                            backgroundColor: greayMain,
+                            child: LoginTextField(
+                              otp: false,
+                              controller: controller.userNameController,
+                              obscure: false,
+                              type: TextInputType.text,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Column(
@@ -214,10 +187,14 @@ class InfoPage extends StatelessWidget {
                               width: width * 0.85,
                               child: Row(
                                 children: [
-                                  CustomText(text: 'password'.tr),
+                                  CustomText(text: 'email'.tr),
                                   SizedBox(
                                     width: width * 0.02,
                                   ),
+                                  if (controller.userModel.method !=
+                                      LoginMethod.email) ...[
+                                    CustomText(text: 'optional'.tr)
+                                  ],
                                 ],
                               )),
                           LoginContainer(
@@ -225,7 +202,7 @@ class InfoPage extends StatelessWidget {
                             backgroundColor: greayMain,
                             child: LoginTextField(
                               otp: false,
-                              controller: controller.passWordController,
+                              controller: controller.emailController,
                               obscure: false,
                               type: TextInputType.emailAddress,
                             ),
@@ -233,138 +210,176 @@ class InfoPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ],
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                            width: width * 0.85,
-                            child: CustomText(text: 'birth'.tr)),
-                        LoginContainer(
-                          width: width * 0.85,
-                          backgroundColor: greayMain,
-                          child: Row(
-                            children: [
-                              isIos
-                                  ? CupertinoButton(
-                                      child:
-                                          const Icon(CupertinoIcons.calendar),
-                                      onPressed: () => controller.setBirth(
-                                          width: width,
-                                          isIos: isIos,
-                                          context: context,
-                                          height: height,
-                                          color: Colors.transparent),
-                                    )
-                                  : IconButton(
-                                      splashRadius: 15,
-                                      onPressed: () => controller.setBirth(
-                                          isIos: isIos,
-                                          width: width,
-                                          context: context,
-                                          height: height * 0.1,
-                                          color: whiteColor),
-                                      icon: const Icon(Icons.calendar_month),
+                    if (controller.userModel.method == LoginMethod.email) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                                width: width * 0.85,
+                                child: Row(
+                                  children: [
+                                    CustomText(text: 'password'.tr),
+                                    SizedBox(
+                                      width: width * 0.02,
                                     ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: GetBuilder<AuthController>(
-                                  init: Get.find<AuthController>(),
-                                  builder: (build) => CustomText(
-                                    text: build.userModel.birthday.toString(),
-                                    size: 18,
+                                  ],
+                                )),
+                            LoginContainer(
+                              width: width * 0.85,
+                              backgroundColor: greayMain,
+                              child: LoginTextField(
+                                otp: false,
+                                controller: controller.passWordController,
+                                obscure: false,
+                                type: TextInputType.emailAddress,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                              width: width * 0.85,
+                              child: CustomText(text: 'birth'.tr)),
+                          GestureDetector(
+                            onTap: () => controller.setBirth(
+                                width: width,
+                                isIos: isIos,
+                                context: context,
+                                height: height,
+                                color: Colors.transparent),
+                            child: LoginContainer(
+                              width: width * 0.85,
+                              backgroundColor: greayMain,
+                              child: Row(
+                                children: [
+                                  isIos
+                                      ? CupertinoButton(
+                                          child: const Icon(
+                                              CupertinoIcons.calendar),
+                                          onPressed: () => controller.setBirth(
+                                              width: width,
+                                              isIos: isIos,
+                                              context: context,
+                                              height: height,
+                                              color: Colors.transparent),
+                                        )
+                                      : IconButton(
+                                          splashRadius: 15,
+                                          onPressed: () => controller.setBirth(
+                                              isIos: isIos,
+                                              width: width,
+                                              context: context,
+                                              height: height * 0.1,
+                                              color: whiteColor),
+                                          icon:
+                                              const Icon(Icons.calendar_month),
+                                        ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: GetBuilder<AuthController>(
+                                      init: Get.find<AuthController>(),
+                                      builder: (build) => CustomText(
+                                        text:
+                                            build.userModel.birthday.toString(),
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Column(
+                        children: [
+                          GetBuilder<AuthController>(
+                            init: Get.find<AuthController>(),
+                            builder: (build) => Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      left: width * 0.075, right: width * 0.1),
+                                  child: CustomText(
+                                    text: 'gender'.tr,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      children: [
-                        GetBuilder<AuthController>(
-                          init: Get.find<AuthController>(),
-                          builder: (build) => Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    left: width * 0.075, right: width * 0.1),
-                                child: CustomText(
-                                  text: 'gender'.tr,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0),
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      build.setGender(gender: Gender.male),
-                                  child: Chip(
-                                    shadowColor: shadowColor,
-                                    elevation:
-                                        build.userModel.gender == Gender.male
-                                            ? 5
-                                            : 0,
-                                    side: BorderSide(
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0),
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        build.setGender(gender: Gender.male),
+                                    child: Chip(
+                                      shadowColor: shadowColor,
+                                      elevation:
+                                          build.userModel.gender == Gender.male
+                                              ? 5
+                                              : 0,
+                                      side: BorderSide(
+                                          color: build.userModel.gender ==
+                                                  Gender.male
+                                              ? greyAccent
+                                              : greyAccent.withOpacity(0.5)),
+                                      padding: const EdgeInsets.all(12.0),
+                                      label: CustomText(
+                                        text: 'male'.tr,
                                         color: build.userModel.gender ==
                                                 Gender.male
-                                            ? greyAccent
-                                            : greyAccent.withOpacity(0.5)),
-                                    padding: const EdgeInsets.all(12.0),
-                                    label: CustomText(
-                                      text: 'male'.tr,
-                                      color:
-                                          build.userModel.gender == Gender.male
-                                              ? blackColor
-                                              : blackColor.withOpacity(0.5),
+                                            ? blackColor
+                                            : blackColor.withOpacity(0.5),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 6.0),
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      build.setGender(gender: Gender.female),
-                                  child: Chip(
-                                    side: BorderSide(
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6.0),
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        build.setGender(gender: Gender.female),
+                                    child: Chip(
+                                      side: BorderSide(
+                                          color: build.userModel.gender ==
+                                                  Gender.female
+                                              ? greyAccent
+                                              : greyAccent.withOpacity(0.5)),
+                                      elevation: build.userModel.gender ==
+                                              Gender.female
+                                          ? 5
+                                          : 0,
+                                      padding: const EdgeInsets.all(12.0),
+                                      label: CustomText(
+                                        text: 'female'.tr,
                                         color: build.userModel.gender ==
                                                 Gender.female
-                                            ? greyAccent
-                                            : greyAccent.withOpacity(0.5)),
-                                    elevation:
-                                        build.userModel.gender == Gender.female
-                                            ? 5
-                                            : 0,
-                                    padding: const EdgeInsets.all(12.0),
-                                    label: CustomText(
-                                      text: 'female'.tr,
-                                      color: build.userModel.gender ==
-                                              Gender.female
-                                          ? blackColor
-                                          : blackColor.withOpacity(0.5),
+                                            ? blackColor
+                                            : blackColor.withOpacity(0.5),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                              top: controller.userModel.method ==
-                                      LoginMethod.email
-                                  ? width * 0.1
-                                  : width * 0.2),
-                          child: Container(
+                          Padding(
+                            padding: EdgeInsets.only(
+                                top: controller.userModel.method ==
+                                        LoginMethod.email
+                                    ? width * 0.1
+                                    : width * 0.2),
+                            child: Container(
                               decoration: BoxDecoration(
                                 boxShadow: [
                                   BoxShadow(
@@ -393,7 +408,10 @@ class InfoPage extends StatelessWidget {
                                                 text: 'login'.tr,
                                                 align: TextAlign.left,
                                               ),
-                                        onPressed: () async {},
+                                        onPressed: () => build.completeLogin(
+                                            method: build.userModel.method
+                                                as LoginMethod,
+                                            context: context),
                                       )
                                     : ElevatedButton(
                                         style: ButtonStyle(
@@ -405,7 +423,10 @@ class InfoPage extends StatelessWidget {
                                             ),
                                           ),
                                         ),
-                                        onPressed: () async {},
+                                        onPressed: () => build.completeLogin(
+                                            method: build.userModel.method
+                                                as LoginMethod,
+                                            context: context),
                                         child: build.loading
                                             ? CircularProgressIndicator(
                                                 color: whiteColor,
@@ -415,17 +436,19 @@ class InfoPage extends StatelessWidget {
                                                 align: TextAlign.left,
                                               ),
                                       ),
-                              )),
-                        ),
-                      ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 }

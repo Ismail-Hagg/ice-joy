@@ -24,7 +24,10 @@ class Translation extends Translations {
           'gender': 'Gender',
           'male': 'Male',
           'female': 'Female',
-          'birth': 'Birth Date'
+          'birth': 'Birth Date',
+          'complete': 'Please complete your registration',
+          'ver': 'Verification',
+          'codesend': 'Enter the code sent to the number'
         },
         'ar_SA': {
           'email': 'العنوان الالكتروني',
@@ -47,7 +50,10 @@ class Translation extends Translations {
           'gender': 'الجنس',
           'male': 'ذكر',
           'female': 'انثى',
-          'birth': 'تاريخ الميلاد'
+          'birth': 'تاريخ الميلاد',
+          'complete': 'الرجاء اكمال بيانات تسجيل الدخول',
+          'ver': 'تحقق',
+          'codesend': 'ادخل الرمز المرسل الى الرقم'
         }
       };
 }

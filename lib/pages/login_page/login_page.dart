@@ -233,7 +233,8 @@ class LoginPage extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                          onPressed: () async {},
+                                          onPressed: () => build.thingy(
+                                              build.emailController.text),
                                           child: build.loading
                                               ? CircularProgressIndicator(
                                                   color: whiteColor,
