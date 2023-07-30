@@ -1,15 +1,20 @@
+import 'dart:io';
+
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:icejoy/pages/login_page/info_page.dart';
 import 'package:icejoy/pages/login_page/otp_page.dart';
+import 'package:icejoy/pages/login_page/pre_otp_page.dart';
 import 'package:icejoy/pages/view_controller.dart';
 import 'package:icejoy/services/firebase_services.dart';
 import 'package:intl/intl.dart';
 import 'package:phone_number/phone_number.dart';
+
 import '../../local_storage/local_data_pref.dart';
 import '../../models/user_model.dart';
 import '../../utils/enums.dart';
@@ -40,6 +45,9 @@ class AuthController extends GetxController {
 
   UserModel get userModel => _userModel;
 
+  String _phoneCountry = '';
+  String get phoneCountry => _phoneCountry;
+
   @override
   void onInit() {
     super.onInit();
@@ -50,11 +58,10 @@ class AuthController extends GetxController {
 
   @override
   void onClose() {
-    // TODO: implement onClose
     super.onClose();
     _emailController.dispose();
     _userNameController.dispose();
-    passWordController.dispose();
+    _passWordController.dispose();
   }
 
   // controll the password textfield abscured or not
@@ -63,294 +70,63 @@ class AuthController extends GetxController {
     update();
   }
 
-  // google sign in method
-  void googleSignIn({required BuildContext context}) async {
-    await GoogleSignIn().signIn().then((value) async {
-      if (value != null) {
-        _loading = true;
-        update();
-        try {
-          final GoogleSignInAuthentication gAuth = await value.authentication;
-
-          final credential = GoogleAuthProvider.credential(
-              accessToken: gAuth.accessToken, idToken: gAuth.idToken);
-          await _auth.signInWithCredential(credential).then((user) =>
-              handleUser(
-                  user: user, method: LoginMethod.google, context: context));
-        } on FirebaseAuthException catch (e) {
-          _loading = false;
-          update();
-          await showOkAlertDialog(
-            context: context,
-            title: 'error'.tr,
-            message: getMessageFromErrorCode(errorMessage: e.code),
-          );
-        } catch (e) {
-          _loading = false;
-          update();
-          await showOkAlertDialog(
-            context: context,
-            title: 'error'.tr,
-            message: getMessageFromErrorCode(errorMessage: e.toString()),
-          );
-        }
-      }
-    });
-  }
-
-  //phone auth
-  void phoneAuth(
-      {required String phoneNumber,
-      required BuildContext context,
-      required LoginMethod method}) async {
-    try {
-      await _auth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (credential) async {
-          if (method == LoginMethod.phone) {
-            _loading = false;
-            update();
-
-            // await _auth.signInWithCredential(credential).then((value) {
-            //   // move to info
-            // });
-          } else {
-            _userModel.state = LogState.full;
-            _loading = false;
-            Get.offAll(() => const ControllPage());
-          }
-          print('================= verificationCompleted =============');
-        },
-        verificationFailed: (e) async {
-          _loading = false;
-          update();
-          print('================= verificationFailed =============');
-          print(e.code);
-          await showOkAlertDialog(
-              context: context,
-              title: 'error'.tr,
-              // message: getMessageFromErrorCode(
-              //   errorMessage: e.toString(),
-              // ),
-              message: e.toString());
-        },
-        codeSent: (verificationId, resendToken) async {
-          print('================= codeSent =============');
-          _loading = false;
-          update();
-          Get.to(() => OtpPage(verificationId: verificationId));
-        },
-        codeAutoRetrievalTimeout: (verificationId) {
-          print(verificationId);
-          print('================= codeAutoRetrievalTimeout =============');
-        },
-      );
-    } on FirebaseAuthException catch (e) {
-      await showOkAlertDialog(
-          context: context,
-          title: 'error'.tr,
-          // message: getMessageFromErrorCode(
-          //   errorMessage: e.toString(),
-          // ),
-          message: e.code);
-    } catch (e) {
-      await showOkAlertDialog(
-          context: context,
-          title: 'error'.tr,
-          // message: getMessageFromErrorCode(
-          //   errorMessage: e.toString(),
-          // ),
-          message: e.toString());
-    }
-  }
-
-  // verify otp
-  void verifyOtp(
-      {required String otp,
-      required String verificationId,
-      required BuildContext context}) async {
-    _loading = true;
-    update();
-    try {
-      PhoneAuthCredential creds = PhoneAuthProvider.credential(
-          verificationId: verificationId, smsCode: otp);
-      await _auth.signInWithCredential(creds).then((value) {
-        _userModel.state = LogState.full;
-        saveUserDataLocally(model: _userModel).then((value) async {
-          if (value) {
-            _loading = false;
-            Get.offAll(() => const ControllPage());
-          } else {
-            await showOkAlertDialog(
-                context: context,
-                title: 'error'.tr,
-                // message: getMessageFromErrorCode(
-                //   errorMessage: e.toString(),
-                // ),
-                message: 'firelogin'.tr);
-          }
-        });
-      });
-
-      // await _auth.signInWithCredential(creds).then(
-      //   (value) {
-      //     _userModel.state = LogState.full;
-      //     update();
-      //   },
-      // );
-    } on FirebaseAuthException catch (e) {
-      await showOkAlertDialog(
-          context: context,
-          title: 'error'.tr,
-          // message: getMessageFromErrorCode(
-          //   errorMessage: e.toString(),
-          // ),
-          message: e.code);
-    } catch (e) {
-      await showOkAlertDialog(
-        context: context,
-        title: 'error'.tr,
-        // message: getMessageFromErrorCode(
-        //   errorMessage: e.toString(),
-        // ),
-        message: e.toString(),
-      );
-    }
-  }
-
   // handle user after login
-  void handleUser(
-      {required UserCredential user,
-      required LoginMethod method,
-      required BuildContext context}) {
+  Future<bool> isNewUser({
+    required String user,
+  }) async {
     // check if user exists
 
-    FirebaseServices()
-        .getCurrentUser(userId: user.user!.uid)
-        .then((value) async {
-      if (value.data() != null) {
-        // old user
-      } else {
-        // new user
-
-        _userModel = UserModel(
-            userName: user.user!.displayName ?? '',
-            email: user.user!.email ?? '',
-            onlinePicPath: user.user!.photoURL ?? '',
-            localPicPath: '',
-            userId: user.user!.uid,
-            language: Get.deviceLocale.toString().substring(0, 2) == 'en'
-                ? 'en_US'
-                : Get.deviceLocale.toString().substring(0, 2) == 'ar'
-                    ? 'ar_SA'
-                    : 'ar_SA',
-            isError: false,
-            messagingToken: '',
-            errorMessage: '',
-            state: LogState.info,
-            gender: Gender.undecided,
-            phoneNumber: user.user!.phoneNumber ?? '',
-            birthday: '',
-            method: method,
-            points: 0);
-        await saveUserDataLocally(model: _userModel).then(
-          (value) async {
-            if (value) {
-              _userNameController.text = _userModel.userName ?? '';
-              _emailController.text = _userModel.email ?? '';
-              _loading = false;
-              Get.offAll(() => const ControllPage());
-            } else {
-              await showOkAlertDialog(
-                context: context,
-                title: 'error'.tr,
-                message: 'firelogin'.tr,
-              );
-              _loading = false;
-              signOut();
-            }
-          },
-        );
-      }
-    });
+    var thing = await FirebaseServices().getCurrentUser(userId: user);
+    if (thing.exists) {
+      _userModel = UserModel.fromMap(thing.data() as Map<String, dynamic>);
+      saveUserDataLocally(model: _userModel);
+    }
+    return !thing.exists;
   }
 
   // complete login process
-  void completeLogin(
-      {required LoginMethod method, required BuildContext context}) async {
+  void completeLogin({required BuildContext context}) async {
     FocusScope.of(context).unfocus();
-    //if(){}else{}
-    switch (method) {
+    _loading = true;
+    update();
+
+    switch (_userModel.method) {
       case LoginMethod.google:
-        if (_userModel.phoneNumber == '' ||
-            _userNameController.text == '' ||
-            _userModel.birthday == '' ||
-            _userModel.gender == Gender.undecided) {
-          // tell user to complete info
-          await showOkAlertDialog(
-            context: context,
-            title: 'error'.tr,
-            message: 'complete'.tr,
-          );
-        } else {
-          _loading = true;
-          update();
-
-          // fill user model with new info and save it locally
-          _userModel = UserModel(
-              userName: _userNameController.text,
-              email: _emailController.text,
-              onlinePicPath: _userModel.onlinePicPath,
-              localPicPath: _userModel.localPicPath,
-              userId: _userModel.userId,
-              language: _userModel.language,
-              isError: false,
-              messagingToken: _userModel.messagingToken,
-              state: LogState.info,
-              gender: _userModel.gender,
-              phoneNumber: _userModel.phoneNumber,
-              birthday: _userModel.birthday,
-              errorMessage: '',
-              method: method,
-              points: 0);
-
-          // take user to otp page
-          phoneAuth(
-              phoneNumber: _userModel.phoneNumber.toString(),
-              context: context,
-              method: method);
-          // _loading = false;
-
-          //Get.to(() => const OtpPage());
-        }
+        compGoogle(context: context);
         break;
+
+      case LoginMethod.email:
+        compEmail(context: context);
+        break;
+
       default:
+        compPhone(context: context);
     }
   }
 
   // click on create account
-  void goToEmail() {
+  void goToEmail({required LoginMethod method}) {
     _userModel = UserModel(
+        userName: '',
+        email: '',
+        userId: '',
+        language: languageDev(),
         isError: false,
-        method: LoginMethod.email,
+        method: method,
         birthday: '',
         onlinePicPath: '',
+        messagingToken: '',
+        state: LogState.none,
+        gender: Gender.undecided,
+        phoneNumber: '',
+        errorMessage: '',
+        points: 0,
         localPicPath: '');
-    Get.to(() => const InfoPage());
+    Get.to(
+        () => method == LoginMethod.email ? const InfoPage() : const PreOtp());
   }
 
-  void alert(BuildContext context) async {
-    await showOkAlertDialog(
-        context: context,
-        message: 'This is message.',
-        useActionSheetForIOS: true);
-  }
-
-  // save user data locally
-  Future<bool> saveUserDataLocally({required UserModel model}) async {
-    return await DataPref().setUser(model);
-  }
-
+  // set user birthdate
   void setBirth(
       {required bool isIos,
       required BuildContext context,
@@ -373,9 +149,10 @@ class AuthController extends GetxController {
   }
 
   // set phone numbrt in usermodel
-  void moedelPhone({required String phone}) {
+  void moedelPhone({required String phone, required String country}) {
     _userModel.phoneNumber =
         phone.trim() == '' || phone.trim() == '+966' ? '' : phone.trim();
+    _phoneCountry = country;
   }
 
   // set gender in model
@@ -404,8 +181,6 @@ class AuthController extends GetxController {
     update();
   }
 
-  //
-
   // select pic from device
   void selectPic() async {
     if (_userModel.localPicPath == '' && _userModel.onlinePicPath == '') {
@@ -426,7 +201,9 @@ class AuthController extends GetxController {
   void controllerClear() {
     _emailController.clear();
     _passWordController.clear();
-    _userNameController.clear;
+    _userNameController.clear();
+
+    _userModel = UserModel();
   }
 
   // logout
@@ -438,15 +215,672 @@ class AuthController extends GetxController {
     update();
   }
 
-  void thingy(String num) async {
-    RegionInfo region = RegionInfo(name: 'SA', code: 'SA', prefix: 2);
-    // PhoneNumber phoneNumber =
-    //     await PhoneNumberUtil().parse(num, regionCode: region.code);
-    // print('=====================');
-    // print(phoneNumber);
+  // login with only phone
+  void phoneLogin({required BuildContext context}) async {
+    FocusScope.of(context).unfocus();
+    _loading = true;
+    update();
 
-    await PhoneNumberUtil()
-        .validate(num, regionCode: region.code)
-        .then((value) => print('Validity : $value'));
+    if (_userModel.phoneNumber == '') {
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: 'enterphone'.tr,
+      );
+    } else {
+      await phoneValid(
+              phone: _userModel.phoneNumber.toString(), country: _phoneCountry)
+          .then((value) async {
+        if (value) {
+          phoneAuth(
+              phoneNumber: _userModel.phoneNumber.toString(),
+              context: context,
+              method: _userModel.method as LoginMethod);
+        } else {
+          _loading = false;
+          update();
+          await showOkAlertDialog(
+            context: context,
+            title: 'error'.tr,
+            message: 'badphone'.tr,
+          );
+        }
+      });
+    }
+  }
+
+  // check if phone number is valid
+  Future<bool> phoneValid(
+      {required String phone, required String country}) async {
+    RegionInfo region = RegionInfo(name: country, code: country, prefix: 2);
+
+    return await PhoneNumberUtil().validate(phone, regionCode: region.code);
+  }
+
+  // complete login google
+  void compGoogle({required BuildContext context}) async {
+    if (_userModel.phoneNumber == '' ||
+        _userNameController.text.trim() == '' ||
+        _userModel.birthday == '' ||
+        _userModel.gender == Gender.undecided) {
+      // tell user to complete info
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: 'complete'.tr,
+      );
+    } else {
+      await phoneValid(
+              phone: _userModel.phoneNumber.toString(), country: _phoneCountry)
+          .then((value) async {
+        if (!value) {
+          _loading = false;
+          update();
+          await showOkAlertDialog(
+            context: context,
+            title: 'error'.tr,
+            message: 'badphone'.tr,
+          );
+        } else {
+          // fill user model with new info and save it locally
+          _userModel.userName = _userNameController.text.trim();
+          _userModel.email = _emailController.text.trim();
+          _userModel.state = LogState.info;
+
+          await saveUserDataLocally(model: _userModel).then((done) async {
+            if (done) {
+              phoneAuth(
+                  phoneNumber: _userModel.phoneNumber.toString(),
+                  context: context,
+                  method: _userModel.method as LoginMethod);
+            } else {
+              _loading = false;
+              update();
+              await showOkAlertDialog(
+                context: context,
+                title: 'error'.tr,
+                message: 'firelogin'.tr,
+              );
+            }
+          });
+        }
+      });
+    }
+  }
+
+  // conmplete login phone
+  void compPhone({required BuildContext context}) async {
+    if (_userNameController.text.trim() == '' ||
+        _userModel.birthday == '' ||
+        _userModel.gender == Gender.undecided) {
+      // tell user to complete info
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: 'complete'.tr,
+      );
+    } else {
+      // user data conpleted , save locally then send to database and upload picture if necessary
+      _userModel.userName = _userNameController.text.trim();
+      _userModel.state = LogState.full;
+      await saveUserDataLocally(model: _userModel).then((done) async {
+        if (done) {
+          _loading = false;
+          Get.offAll(() => const ControllPage());
+
+          await uploadUser(model: _userModel).then((_) async {
+            if (_userModel.localPicPath != '' &&
+                _userModel.onlinePicPath == '') {
+              await uploadeImage(
+                      fileName: 'images/profile',
+                      id: _userModel.userId.toString(),
+                      file: _userModel.localPicPath.toString())
+                  .then((value) {
+                _userModel.onlinePicPath = value;
+                saveUserDataLocally(model: _userModel).then((value) async {
+                  if (value) {
+                    await FirebaseServices().userUpdate(
+                        userId: _userModel.userId.toString(),
+                        map: {'onlinePicPath': _userModel.onlinePicPath});
+                  }
+                });
+              }).onError((error, stackTrace) async {
+                _userModel.state = LogState.info;
+                await saveUserDataLocally(model: _userModel)
+                    .then((value) => Get.offAll(() => const ControllPage()));
+              });
+            }
+          });
+        } else {
+          _loading = false;
+          update();
+          await showOkAlertDialog(
+            context: context,
+            title: 'error'.tr,
+            message: 'firelogin'.tr,
+          );
+        }
+      });
+    }
+  }
+
+  // complete login email
+  void compEmail({required BuildContext context}) async {
+    if (_userModel.phoneNumber == '' ||
+        _userNameController.text.trim() == '' ||
+        _userModel.birthday == '' ||
+        _emailController.text.trim() == '' ||
+        _passWordController.text.trim() == '' ||
+        _userModel.gender == Gender.undecided) {
+      // tell user to complete info
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: 'complete'.tr,
+      );
+    } else {
+      // check if the phone number is valid
+      await phoneValid(
+              phone: _userModel.phoneNumber.toString(), country: _phoneCountry)
+          .then((value) async {
+        if (!value) {
+          // tell user number is not valid
+          _loading = false;
+          update();
+          await showOkAlertDialog(
+            context: context,
+            title: 'error'.tr,
+            message: 'badphone'.tr,
+          );
+        } else {
+          // continue login
+          await emailSignup(
+                  context: context,
+                  email: _emailController.text.trim(),
+                  password: _passWordController.text.trim())
+              .then((res) async {
+            if (res) {
+              await saveUserDataLocally(model: _userModel).then((done) async {
+                if (done) {
+                  phoneAuth(
+                      phoneNumber: _userModel.phoneNumber.toString(),
+                      context: context,
+                      method: _userModel.method as LoginMethod);
+                } else {
+                  _loading = false;
+                  update();
+                  await showOkAlertDialog(
+                    context: context,
+                    title: 'error'.tr,
+                    message: 'firelogin'.tr,
+                  );
+                }
+              });
+            } else {
+              _loading = false;
+              update();
+              await showOkAlertDialog(
+                context: context,
+                title: 'error'.tr,
+                message: 'firelogin'.tr,
+              );
+            }
+          });
+        }
+      });
+    }
+  }
+
+  // save user data locally
+  Future<bool> saveUserDataLocally({required UserModel model}) async {
+    return await DataPref().setUser(model);
+  }
+
+  // google sign in method
+  void googleSignIn({required BuildContext context}) async {
+    await GoogleSignIn().signIn().then(
+      (value) async {
+        if (value != null) {
+          _loading = true;
+          update();
+          try {
+            final GoogleSignInAuthentication gAuth = await value.authentication;
+
+            final credential = GoogleAuthProvider.credential(
+                accessToken: gAuth.accessToken, idToken: gAuth.idToken);
+            await _auth.signInWithCredential(credential).then(
+              (user) async {
+                await isNewUser(user: user.user!.uid).then(
+                  (newUser) async {
+                    if (newUser) {
+                      // new user
+                      _userModel = UserModel(
+                          userName: user.user!.displayName ?? '',
+                          email: user.user!.email ?? '',
+                          onlinePicPath: user.user!.photoURL ?? '',
+                          localPicPath: '',
+                          userId: user.user!.uid,
+                          language: languageDev(),
+                          isError: false,
+                          messagingToken: '',
+                          errorMessage: '',
+                          state: LogState.info,
+                          gender: Gender.undecided,
+                          phoneNumber: user.user!.phoneNumber ?? '',
+                          birthday: '',
+                          method: LoginMethod.google,
+                          points: 0);
+                      await saveUserDataLocally(model: _userModel).then(
+                        (value) async {
+                          if (value) {
+                            _userNameController.text =
+                                _userModel.userName.toString();
+                            _emailController.text = _userModel.email.toString();
+                            _loading = false;
+                            Get.offAll(() => const ControllPage());
+                          } else {
+                            _loading = false;
+                            update();
+                            await showOkAlertDialog(
+                              context: context,
+                              title: 'error'.tr,
+                              message: 'firelogin'.tr,
+                            );
+                            signOut();
+                          }
+                        },
+                      );
+                    } else {
+                      // old user
+                      _loading = false;
+                      Get.offAll(() => const ControllPage());
+                    }
+                  },
+                );
+              },
+            );
+          } on FirebaseAuthException catch (e) {
+            _loading = false;
+            update();
+            await showOkAlertDialog(
+              context: context,
+              title: 'error'.tr,
+              message: getMessageFromErrorCode(errorMessage: e.code),
+            );
+          } catch (e) {
+            _loading = false;
+            update();
+            await showOkAlertDialog(
+              context: context,
+              title: 'error'.tr,
+              message: getMessageFromErrorCode(errorMessage: e.toString()),
+            );
+          }
+        }
+      },
+    );
+  }
+
+  // login with email and password
+  void emailLogin(
+      {required String email,
+      required String password,
+      required BuildContext context}) async {
+    _loading = true;
+    update();
+
+    if (email == '' || password == '') {
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: 'complete'.tr,
+      );
+    } else {
+      try {
+        await _auth
+            .signInWithEmailAndPassword(email: email, password: password)
+            .then((user) async {
+          FirebaseServices()
+              .getCurrentUser(userId: user.user!.uid.toString())
+              .then((value) {
+            _userModel =
+                UserModel.fromMap(value.data() as Map<String, dynamic>);
+            saveUserDataLocally(model: _userModel).then((done) async {
+              if (done) {
+                _loading = false;
+                Get.offAll(() => const ControllPage());
+              } else {
+                _loading = false;
+                update();
+                await showOkAlertDialog(
+                  context: context,
+                  title: 'error'.tr,
+                  message: 'firelogin'.tr,
+                );
+              }
+            });
+          });
+        });
+      } on FirebaseAuthException catch (e) {
+        _loading = false;
+        update();
+        await showOkAlertDialog(
+          context: context,
+          title: 'error'.tr,
+          message: getMessageFromErrorCode(errorMessage: e.code),
+        );
+      } catch (e) {
+        _loading = false;
+        update();
+        await showOkAlertDialog(
+          context: context,
+          title: 'error'.tr,
+          message: getMessageFromErrorCode(errorMessage: e.toString()),
+        );
+      }
+    }
+  }
+
+  // login with email and password
+  Future<bool> emailSignup(
+      {required BuildContext context,
+      required String email,
+      required String password}) async {
+    late bool res;
+    _loading = true;
+    update();
+    try {
+      await _auth
+          .createUserWithEmailAndPassword(email: email, password: password)
+          .then(
+        (user) async {
+          _userModel.email = user.user!.email;
+          _userModel.userName = _userNameController.text;
+          _userModel.userId = user.user!.uid;
+          res = true;
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      _loading = false;
+      update();
+      res = false;
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: getMessageFromErrorCode(errorMessage: e.code),
+      );
+    } catch (e) {
+      _loading = false;
+      update();
+      res = false;
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: getMessageFromErrorCode(errorMessage: e.toString()),
+      );
+    }
+    return res;
+  }
+
+  //login with phone number
+  void phoneAuth(
+      {required String phoneNumber,
+      required BuildContext context,
+      required LoginMethod method}) async {
+    try {
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (credential) async {
+          _loading = true;
+          update();
+
+          await _auth.signInWithCredential(credential).then(
+            (user) async {
+              if (_userModel.method == LoginMethod.phone) {
+                await isNewUser(user: user.user!.uid).then(
+                  (value) {
+                    if (value) {
+                      _userModel.userId = user.user!.uid;
+                      _userModel.state = LogState.info;
+                      saveUserDataLocally(model: _userModel).then(
+                        (value) async {
+                          if (value) {
+                            _loading = false;
+                            Get.to(() => const ControllPage());
+                          } else {
+                            _loading = false;
+                            update();
+                            await showOkAlertDialog(
+                              context: context,
+                              title: 'error'.tr,
+                              message: 'firelogin'.tr,
+                            );
+                            Get.back();
+                          }
+                        },
+                      );
+                    } else {
+                      // user already exists
+                      // user model is taken care of in the isNewUser method , just route
+                      _loading = false;
+                      Get.to(() => const ControllPage());
+                    }
+                  },
+                );
+              } else {
+                _userModel.state = LogState.full;
+                await saveUserDataLocally(model: _userModel)
+                    .then((value) async {
+                  if (value) {
+                    _loading = false;
+                    Get.offAll(() => const ControllPage());
+                    await uploadUser(model: _userModel).then((_) async {
+                      if (_userModel.localPicPath != '' &&
+                          _userModel.onlinePicPath == '') {
+                        await uploadeImage(
+                                fileName: 'images/profile',
+                                id: _userModel.userId.toString(),
+                                file: _userModel.localPicPath.toString())
+                            .then((value) {
+                          _userModel.onlinePicPath = value;
+                          saveUserDataLocally(model: _userModel)
+                              .then((value) async {
+                            if (value) {
+                              await FirebaseServices().userUpdate(
+                                  userId: _userModel.userId.toString(),
+                                  map: {
+                                    'onlinePicPath': _userModel.onlinePicPath
+                                  });
+                            }
+                          });
+                        }).onError((error, stackTrace) async {
+                          _userModel.state = LogState.info;
+                          await saveUserDataLocally(model: _userModel).then(
+                              (value) =>
+                                  Get.offAll(() => const ControllPage()));
+                        });
+                      }
+                    });
+                  } else {
+                    _loading = false;
+                    update();
+                    await showOkAlertDialog(
+                      context: context,
+                      title: 'error'.tr,
+                      message: 'firelogin'.tr,
+                    );
+                    Get.back();
+                  }
+                });
+              }
+            },
+          );
+        },
+        verificationFailed: (e) async {
+          _loading = false;
+          update();
+          await showOkAlertDialog(
+              context: context, title: 'error'.tr, message: e.message);
+        },
+        codeSent: (verificationId, resendToken) async {
+          _loading = false;
+          update();
+          Get.to(() => OtpPage(verificationId: verificationId));
+        },
+        codeAutoRetrievalTimeout: (verificationId) {},
+      );
+    } on FirebaseAuthException catch (e) {
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: getMessageFromErrorCode(errorMessage: e.code),
+      );
+    } catch (e) {
+      await showOkAlertDialog(
+          context: context, title: 'error'.tr, message: e.toString());
+    }
+  }
+
+  // verify otp
+  void verifyOtp(
+      {required String otp,
+      required String verificationId,
+      required BuildContext context}) async {
+    _loading = true;
+    update();
+    try {
+      PhoneAuthCredential creds = PhoneAuthProvider.credential(
+          verificationId: verificationId, smsCode: otp);
+      await _auth.signInWithCredential(creds).then(
+        (user) async {
+          // if coming from phone auth
+          if (_userModel.method == LoginMethod.phone) {
+            // check if new user
+            // make stato info to route to the info page
+            // save data locally
+            await isNewUser(user: user.user!.uid).then(
+              (value) {
+                if (value) {
+                  _userModel.userId = user.user!.uid;
+                  _userModel.state = LogState.info;
+                  saveUserDataLocally(model: _userModel).then(
+                    (value) async {
+                      if (value) {
+                        _loading = false;
+                        Get.offAll(() => const ControllPage());
+                      } else {
+                        _loading = false;
+                        update();
+                        await showOkAlertDialog(
+                          context: context,
+                          title: 'error'.tr,
+                          message: 'firelogin'.tr,
+                        );
+                        Get.back();
+                      }
+                    },
+                  );
+                } else {
+                  // user already exists
+                  // user model is taken care of in the isNewUser method , just route
+                  _loading = false;
+                  Get.to(() => const ControllPage());
+                }
+              },
+            );
+          } else {
+            // coming fron google login or email
+            // state is full to route to home page
+            // save data locally and route
+            // send data to firestore then upload the image if necessary
+
+            _userModel.state = LogState.full;
+            await saveUserDataLocally(model: _userModel).then((value) async {
+              if (value) {
+                _loading = false;
+                Get.offAll(() => const ControllPage());
+                await uploadUser(model: _userModel).then((_) async {
+                  if (_userModel.localPicPath != '' &&
+                      _userModel.onlinePicPath == '') {
+                    await uploadeImage(
+                            fileName: 'images/profile',
+                            id: _userModel.userId.toString(),
+                            file: _userModel.localPicPath.toString())
+                        .then((value) {
+                      _userModel.onlinePicPath = value;
+                      saveUserDataLocally(model: _userModel)
+                          .then((value) async {
+                        if (value) {
+                          await FirebaseServices().userUpdate(
+                              userId: _userModel.userId.toString(),
+                              map: {'onlinePicPath': _userModel.onlinePicPath});
+                        }
+                      });
+                    }).onError((error, stackTrace) async {
+                      _userModel.state = LogState.info;
+                      await saveUserDataLocally(model: _userModel).then(
+                          (value) => Get.offAll(() => const ControllPage()));
+                    });
+                  }
+                });
+              } else {
+                _loading = false;
+                update();
+                await showOkAlertDialog(
+                  context: context,
+                  title: 'error'.tr,
+                  message: 'firelogin'.tr,
+                );
+                Get.back();
+              }
+            });
+          }
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: getMessageFromErrorCode(errorMessage: e.code),
+      );
+    } catch (e) {
+      _loading = false;
+      update();
+      await showOkAlertDialog(
+        context: context,
+        title: 'error'.tr,
+        message: e.toString(),
+      );
+    }
+  }
+
+  // upload user data to firestore
+  Future<void> uploadUser({required UserModel model}) async {
+    await FirebaseServices().addUsers(model);
+  }
+
+  // uploading image to firebase storage
+  Future<String> uploadeImage(
+      {required String id,
+      required String file,
+      required String fileName}) async {
+    UploadTask? uploadTask;
+    final String path = '$id/$fileName';
+    final ref = FirebaseStorage.instance.ref().child(path);
+    uploadTask = ref.putFile(File(file));
+    final snapshot = await uploadTask.whenComplete(() => {});
+    return await snapshot.ref.getDownloadURL();
   }
 }

@@ -27,7 +27,11 @@ class Translation extends Translations {
           'birth': 'Birth Date',
           'complete': 'Please complete your registration',
           'ver': 'Verification',
-          'codesend': 'Enter the code sent to the number'
+          'codesend': 'Enter the code sent to the number',
+          'badphone': 'Invalid phone number',
+          'error': 'Error',
+          'enterphone': 'Enter your phone number',
+          'fireverification': 'invalid verification code'
         },
         'ar_SA': {
           'email': 'العنوان الالكتروني',
@@ -53,7 +57,11 @@ class Translation extends Translations {
           'birth': 'تاريخ الميلاد',
           'complete': 'الرجاء اكمال بيانات تسجيل الدخول',
           'ver': 'تحقق',
-          'codesend': 'ادخل الرمز المرسل الى الرقم'
+          'codesend': 'ادخل الرمز المرسل الى الرقم',
+          'badphone': 'رقم الجوال غير صحيح',
+          'error': 'خطا',
+          'enterphone': ' ادخل رقم الجوال ',
+          'fireverification': 'رقم التحقق غير صحيح'
         }
       };
 }

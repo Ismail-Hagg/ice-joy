@@ -34,17 +34,35 @@ class InfoPage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        GestureDetector(
-                          onTap: () =>
-                              controller.userModel.method == LoginMethod.google
-                                  ? controller.signOut()
-                                  : {controller.controllerClear(), Get.back()},
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Icon(
-                                isIos ? CupertinoIcons.back : Icons.arrow_back),
-                          ),
-                        )
+                        controller.isIos
+                            ? CupertinoButton(
+                                child: Icon(CupertinoIcons.back,
+                                    color: blackColor),
+                                onPressed: () => controller.userModel.method ==
+                                            LoginMethod.google ||
+                                        controller.userModel.method ==
+                                            LoginMethod.phone
+                                    ? controller.signOut()
+                                    : {
+                                        controller.controllerClear(),
+                                        Get.back()
+                                      },
+                              )
+                            : IconButton(
+                                splashRadius: 15,
+                                onPressed: () => controller.userModel.method ==
+                                            LoginMethod.google ||
+                                        controller.userModel.method ==
+                                            LoginMethod.phone
+                                    ? controller.signOut()
+                                    : {
+                                        controller.controllerClear(),
+                                        Get.back()
+                                      },
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: blackColor,
+                                ))
                       ],
                     ),
                     Row(
@@ -125,36 +143,54 @@ class InfoPage extends StatelessWidget {
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(vertical: 0.0),
                       child: Column(
                         children: [
                           SizedBox(
-                              width: width * 0.85,
-                              child: CustomText(text: 'phone'.tr)),
+                            width: width * 0.85,
+                            child: CustomText(text: 'phone'.tr),
+                          ),
                           LoginContainer(
                             width: width * 0.85,
                             backgroundColor: greayMain,
-                            child: InternationalPhoneNumberInput(
-                              keyboardAction: TextInputAction.next,
-                              keyboardType: TextInputType.number,
-                              hintText: '',
-                              initialValue: PhoneNumber(
-                                  isoCode: 'SA',
-                                  phoneNumber: controller.userModel.phoneNumber,
-                                  dialCode: '+966'),
-                              inputBorder: InputBorder.none,
-                              cursorColor: Colors.transparent,
-                              autoValidateMode: AutovalidateMode.disabled,
-                              selectorConfig: const SelectorConfig(
-                                  selectorType: PhoneInputSelectorType.DIALOG,
-                                  useEmoji: true,
-                                  leadingPadding: 18,
-                                  setSelectorButtonAsPrefixIcon: true),
-                              onInputChanged: (val) {
-                                controller.moedelPhone(
-                                    phone: val.phoneNumber.toString());
-                              },
-                            ),
+                            child: controller.userModel.method ==
+                                    LoginMethod.phone
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 18),
+                                    child: CustomText(
+                                        text: controller.userModel.phoneNumber
+                                            .toString()),
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0),
+                                    child: InternationalPhoneNumberInput(
+                                      keyboardAction: TextInputAction.next,
+                                      keyboardType: TextInputType.number,
+                                      hintText: '',
+                                      initialValue: PhoneNumber(
+                                          isoCode: 'SA',
+                                          phoneNumber:
+                                              controller.userModel.phoneNumber,
+                                          dialCode: '+966'),
+                                      inputBorder: InputBorder.none,
+                                      cursorColor: Colors.transparent,
+                                      autoValidateMode:
+                                          AutovalidateMode.disabled,
+                                      selectorConfig: const SelectorConfig(
+                                          selectorType:
+                                              PhoneInputSelectorType.DIALOG,
+                                          useEmoji: true,
+                                          leadingPadding: 18,
+                                          setSelectorButtonAsPrefixIcon: true),
+                                      onInputChanged: (val) {
+                                        controller.moedelPhone(
+                                            country: val.isoCode.toString(),
+                                            phone: val.phoneNumber.toString());
+                                      },
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
@@ -174,6 +210,7 @@ class InfoPage extends StatelessWidget {
                               controller: controller.userNameController,
                               obscure: false,
                               type: TextInputType.text,
+                              action: TextInputAction.next,
                             ),
                           ),
                         ],
@@ -205,6 +242,7 @@ class InfoPage extends StatelessWidget {
                               controller: controller.emailController,
                               obscure: false,
                               type: TextInputType.emailAddress,
+                              action: TextInputAction.next,
                             ),
                           ),
                         ],
@@ -233,6 +271,7 @@ class InfoPage extends StatelessWidget {
                                 controller: controller.passWordController,
                                 obscure: false,
                                 type: TextInputType.emailAddress,
+                                action: TextInputAction.done,
                               ),
                             ),
                           ],
@@ -409,8 +448,6 @@ class InfoPage extends StatelessWidget {
                                                 align: TextAlign.left,
                                               ),
                                         onPressed: () => build.completeLogin(
-                                            method: build.userModel.method
-                                                as LoginMethod,
                                             context: context),
                                       )
                                     : ElevatedButton(
@@ -424,8 +461,6 @@ class InfoPage extends StatelessWidget {
                                           ),
                                         ),
                                         onPressed: () => build.completeLogin(
-                                            method: build.userModel.method
-                                                as LoginMethod,
                                             context: context),
                                         child: build.loading
                                             ? CircularProgressIndicator(

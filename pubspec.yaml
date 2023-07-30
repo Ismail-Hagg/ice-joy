@@ -46,6 +46,8 @@ dependencies:
   file_picker: ^5.3.3
   pinput: ^2.3.0
   phone_number: ^2.0.1
+  firebase_storage: ^11.2.5
+  # twilio_flutter: ^0.0.9
   # sms_autofill: ^2.3.0
   # flutter_multi_formatter: ^2.11.5
   # geolocator: ^9.0.2

@@ -27,6 +27,8 @@ String getMessageFromErrorCode({required String errorMessage}) {
     case "ERROR_INVALID_EMAIL":
     case "invalid-email":
       return "fireemail".tr;
+    case 'invalid-verification-code':
+      return 'fireverification'.tr;
     default:
       return "firelogin".tr;
   }
@@ -65,4 +67,13 @@ void datePicker({
       Get.find<AuthController>().moedelBirth(time: dateTime);
     }
   }
+}
+
+// set initial language according to device
+String languageDev() {
+  return Get.deviceLocale.toString().substring(0, 2) == 'en'
+      ? 'en_US'
+      : Get.deviceLocale.toString().substring(0, 2) == 'ar'
+          ? 'ar_SA'
+          : 'ar_SA';
 }

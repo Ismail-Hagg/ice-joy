@@ -3,12 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:icejoy/models/user_model.dart';
 import 'package:icejoy/pages/login_page/auth_controller.dart';
 import 'package:icejoy/pages/view_controller.dart';
 import 'package:icejoy/utils/translation.dart';
 
 import 'firebase_options.dart';
 import 'local_storage/local_data_pref.dart';
+import 'utils/functions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,18 +21,29 @@ void main() async {
 
   await DataPref().getUserData().then(
     (user) {
-      Get.put(AuthController(user,
-          isIos: defaultTargetPlatform == TargetPlatform.iOS));
+      Get.put(
+        AuthController(user,
+            isIos: defaultTargetPlatform == TargetPlatform.iOS),
+      );
+      runApp(
+        MyApp(
+          language: language(user: user),
+        ),
+      );
     },
   );
-
-  runApp(MyApp(
-    language: language(),
-  ));
 }
 
-Locale language() {
-  return const Locale('en', 'US');
+Locale language({required UserModel user}) {
+  return user.isError == true || user.language == ''
+      ? Locale(
+          languageDev().substring(0, 2),
+          languageDev().substring(3, 5),
+        )
+      : Locale(
+          user.language.toString().substring(0, 2),
+          user.language.toString().substring(3, 5),
+        );
 }
 
 class MyApp extends StatelessWidget {
@@ -43,7 +56,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'IceJoy',
       translations: Translation(),
-      locale: const Locale('en', 'US'),
+      locale: language,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
