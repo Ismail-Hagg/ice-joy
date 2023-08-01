@@ -31,7 +31,9 @@ class Translation extends Translations {
           'badphone': 'Invalid phone number',
           'error': 'Error',
           'enterphone': 'Enter your phone number',
-          'fireverification': 'invalid verification code'
+          'fireverification': 'invalid verification code',
+          'ok': 'ok',
+          'hello': 'Hello',
         },
         'ar_SA': {
           'email': 'العنوان الالكتروني',
@@ -61,7 +63,9 @@ class Translation extends Translations {
           'badphone': 'رقم الجوال غير صحيح',
           'error': 'خطا',
           'enterphone': ' ادخل رقم الجوال ',
-          'fireverification': 'رقم التحقق غير صحيح'
+          'fireverification': 'رقم التحقق غير صحيح',
+          'ok': 'حسنا',
+          'hello': 'مرحبا'
         }
       };
 }

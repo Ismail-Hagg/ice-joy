@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:icejoy/pages/login_page/auth_controller.dart';
+import 'package:icejoy/controllers/auth_controller.dart';
 import 'package:icejoy/utils/constants.dart';
 import 'package:icejoy/widgets/custom_text.dart';
 import 'package:pinput/pinput.dart';

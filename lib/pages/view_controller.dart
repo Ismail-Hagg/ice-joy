@@ -4,7 +4,7 @@ import 'package:icejoy/pages/login_page/info_page.dart';
 
 import '../utils/enums.dart';
 import 'home_page/home_page.dart';
-import 'login_page/auth_controller.dart';
+import '../controllers/auth_controller.dart';
 import 'login_page/login_page.dart';
 
 class ControllPage extends StatelessWidget {

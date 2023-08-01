@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:icejoy/pages/login_page/auth_controller.dart';
+import 'package:icejoy/controllers/auth_controller.dart';
 import 'package:icejoy/widgets/custom_text.dart';
 import 'package:icejoy/widgets/login_container.dart';
 import 'package:icejoy/widgets/login_textfield.dart';
@@ -151,6 +151,7 @@ class InfoPage extends StatelessWidget {
                             child: CustomText(text: 'phone'.tr),
                           ),
                           LoginContainer(
+                            border: true,
                             width: width * 0.85,
                             backgroundColor: greayMain,
                             child: controller.userModel.method ==
@@ -293,6 +294,7 @@ class InfoPage extends StatelessWidget {
                                 height: height,
                                 color: Colors.transparent),
                             child: LoginContainer(
+                              border: true,
                               width: width * 0.85,
                               backgroundColor: greayMain,
                               child: Row(

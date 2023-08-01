@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:icejoy/models/user_model.dart';
-import 'package:icejoy/pages/login_page/auth_controller.dart';
+import 'package:icejoy/controllers/auth_controller.dart';
 import 'package:icejoy/pages/view_controller.dart';
 import 'package:icejoy/utils/translation.dart';
 

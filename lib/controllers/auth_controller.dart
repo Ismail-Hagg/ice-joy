@@ -15,10 +15,10 @@ import 'package:icejoy/services/firebase_services.dart';
 import 'package:intl/intl.dart';
 import 'package:phone_number/phone_number.dart';
 
-import '../../local_storage/local_data_pref.dart';
-import '../../models/user_model.dart';
-import '../../utils/enums.dart';
-import '../../utils/functions.dart';
+import '../local_storage/local_data_pref.dart';
+import '../models/user_model.dart';
+import '../utils/enums.dart';
+import '../utils/functions.dart';
 
 class AuthController extends GetxController {
   final bool isIos;
@@ -159,18 +159,6 @@ class AuthController extends GetxController {
   void setGender({required Gender gender}) {
     _userModel.gender = gender;
     update();
-  }
-
-  void flipLang() {
-    if (_userModel.language == 'ar') {
-      Get.updateLocale(const Locale('en_US'));
-      _userModel.language = 'en';
-      update();
-    } else {
-      Get.updateLocale(const Locale('ar_SA'));
-      _userModel.language = 'ar';
-      update();
-    }
   }
 
   // remove selected pic from info page

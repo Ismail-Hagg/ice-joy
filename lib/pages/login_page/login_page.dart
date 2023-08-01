@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:icejoy/pages/login_page/auth_controller.dart';
+import 'package:icejoy/controllers/auth_controller.dart';
 import 'package:icejoy/utils/enums.dart';
 import 'package:icejoy/widgets/custom_text.dart';
 
@@ -85,10 +85,12 @@ class LoginPage extends StatelessWidget {
                                       splashRadius: 15,
                                       onPressed: () => builder.passAbscure(),
                                       icon: Icon(
-                                          builder.isPasswordAbscured
-                                              ? Icons.visibility_off_outlined
-                                              : Icons.visibility_outlined,
-                                          color: blackColor)),
+                                        builder.isPasswordAbscured
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                        color: purpleColor.withOpacity(0.8),
+                                      ),
+                                    ),
                               controller: controller.passWordController,
                               otp: false,
                               obscure: builder.isPasswordAbscured,
