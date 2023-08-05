@@ -49,6 +49,7 @@ dependencies:
   firebase_storage: ^11.2.5
   firebase_messaging: ^14.6.5
   firebase_analytics: ^10.4.4
+  salomon_bottom_bar: ^3.3.2
   # twilio_flutter: ^0.0.9
   # sms_autofill: ^2.3.0
   # flutter_multi_formatter: ^2.11.5
